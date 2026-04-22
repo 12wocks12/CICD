@@ -16,10 +16,17 @@ jobs:
           key: ${{ secrets.BASTION_KEY }}
           script: |
             cd ~/hello-cicd
-            git pull origin main
-            # 백엔드 실행 (PM2)
+            # -q 옵션을 붙여서 안내 메시지(stderr)가 안 나오게 함
+            git pull -q origin main
+            
+            # 백엔드 실행
             cd backend
+            # npm install이 정상적으로 돌아갈 거야
             npm install
-            pm2 reload hello-node || pm2 start index.js --name hello-node
-            # 프론트엔드 배포 (Nginx 경로로 복사)
+            
+            # PM2 에러 로그 안 뜨게: 
+            # 만약 프로세스가 있으면 reload, 없으면 start로 깔끔하게 분기
+            pm2 describe hello-node > /dev/null && pm2 reload hello-node || pm2 start index.js --name hello-node
+            
+            # 프론트엔드 배포
             sudo cp -r ../frontend/* /usr/share/nginx/html/
