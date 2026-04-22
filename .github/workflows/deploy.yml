@@ -30,3 +30,5 @@ jobs:
             
             # 프론트엔드 배포
             sudo cp -r ../frontend/* /usr/share/nginx/html/
+
+            pm2 list
