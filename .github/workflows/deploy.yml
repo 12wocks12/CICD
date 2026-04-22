@@ -1,0 +1,25 @@
+name: EC2 Auto Deploy
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remote SSH Deployment
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.BASTION_HOST }}
+          username: ${{ secrets.BASTION_USER }}
+          key: ${{ secrets.BASTION_KEY }}
+          script: |
+            cd ~/hello-cicd
+            git pull origin main
+            # 백엔드 실행 (PM2)
+            cd backend
+            npm install
+            pm2 reload hello-node || pm2 start index.js --name hello-node
+            # 프론트엔드 배포 (Nginx 경로로 복사)
+            sudo cp -r ../frontend/* /usr/share/nginx/html/
